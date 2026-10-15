@@ -1,0 +1,10 @@
+node_modules/
+packages/*/node_modules/
+packages/*/lib/
+packages/*/coverage/
+packages/*/.firebase/
+packages/*/.env
+packages/*/.env.*
+*.tgz
+.DS_Store
+npm-debug.log*
