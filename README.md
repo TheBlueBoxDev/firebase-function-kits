@@ -8,7 +8,7 @@ Cloud Functions that can be versioned, installed, and deployed independently.
 
 | Package | Replaces | Status |
 | --- | --- | --- |
-| [`@theblueboxdev/resize-images`](./packages/resize-images) | `firebase/storage-resize-images` | Release candidate |
+| [`@thebluebox/resize-images`](./packages/resize-images) | `firebase/storage-resize-images` | Release candidate |
 
 Each package has its own README, changelog, tests, version, and npm release.
 Firebase project configuration belongs in the consuming application's
@@ -36,7 +36,7 @@ packages under `packages/` explicitly control their npm publication settings.
 ## Publishing
 
 Package releases use npm Trusted Publishing from GitHub Actions. The
-`publish.yml` workflow stages `@theblueboxdev/resize-images` using OIDC and no
+`publish.yml` workflow stages `@thebluebox/resize-images` using OIDC and no
 long-lived npm token. A maintainer must inspect and approve the staged package
 with npm two-factor authentication before it becomes public.
 

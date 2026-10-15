@@ -38,6 +38,6 @@ jobs:
       - run: npm run build
       - run: npm test
       - run: npm run pack:resize-images
-      - name: Stage @theblueboxdev/resize-images
+      - name: Stage @thebluebox/resize-images
         working-directory: packages/resize-images
         run: npm stage publish --access public --tag "${{ inputs.dist_tag }}"

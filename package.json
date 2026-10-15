@@ -1,5 +1,5 @@
 {
-  "name": "@theblueboxdev/firebase-function-kits",
+  "name": "@thebluebox/firebase-function-kits",
   "version": "0.0.0",
   "private": true,
   "description": "TheBlueBoxDev self-managed Firebase Function Kits",
@@ -13,6 +13,6 @@
   "scripts": {
     "build": "npm run build --workspaces --if-present",
     "test": "npm run test --workspaces --if-present -- --runInBand",
-    "pack:resize-images": "npm pack --workspace @theblueboxdev/resize-images --dry-run"
+    "pack:resize-images": "npm pack --workspace @thebluebox/resize-images --dry-run"
   }
 }

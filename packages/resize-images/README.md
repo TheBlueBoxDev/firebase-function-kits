@@ -1,4 +1,4 @@
-# @theblueboxdev/resize-images
+# @thebluebox/resize-images
 
 Self-managed Cloud Functions for Firebase replacement for the deprecated
 `firebase/storage-resize-images` extension. This fork starts from Firebase's
@@ -29,7 +29,7 @@ Run from the Firebase project root:
 firebase functions:kits:install \
   --template migration \
   --no-configure \
-  --package @theblueboxdev/resize-images@1.0.0-rc.1 \
+  --package @thebluebox/resize-images@1.0.0-rc.1 \
   --project <firebase-project-id> \
   --account <firebase-account>
 ```
