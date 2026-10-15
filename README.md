@@ -32,3 +32,22 @@ npm run pack:resize-images
 
 The repository root is private to prevent accidental publication. Individual
 packages under `packages/` explicitly control their npm publication settings.
+
+## Publishing
+
+Package releases use npm Trusted Publishing from GitHub Actions. The
+`publish.yml` workflow stages `@theblueboxdev/resize-images` using OIDC and no
+long-lived npm token. A maintainer must inspect and approve the staged package
+with npm two-factor authentication before it becomes public.
+
+The trusted publisher for this package must use:
+
+```text
+GitHub organization: TheBlueBoxDev
+Repository: firebase-function-kits
+Workflow: publish.yml
+Allowed action: npm stage publish
+```
+
+Run the workflow only from `main`. Use the `next` distribution tag for release
+candidates and `latest` for stable releases.

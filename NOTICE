@@ -1,0 +1,12 @@
+TheBlueBoxDev Firebase Function Kits
+Copyright 2026 TheBlueBoxDev
+
+This product includes software derived from Firebase Extensions,
+Copyright Google LLC, available at:
+https://github.com/firebase/extensions
+
+The resize-images package is based on firebase/storage-resize-images and has
+been modified by TheBlueBoxDev for use as a self-managed Firebase Function Kit.
+
+This product is licensed under the Apache License, Version 2.0. See LICENSE for
+the complete license text.

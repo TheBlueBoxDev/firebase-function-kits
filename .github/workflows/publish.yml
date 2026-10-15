@@ -1,0 +1,43 @@
+name: Stage Resize Images on npm
+
+on:
+  workflow_dispatch:
+    inputs:
+      dist_tag:
+        description: npm distribution tag
+        required: true
+        default: next
+        type: choice
+        options:
+          - next
+          - latest
+
+permissions:
+  contents: read
+  id-token: write
+
+concurrency:
+  group: npm-stage-resize-images
+  cancel-in-progress: false
+
+jobs:
+  stage:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    environment: npm
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version-file: .nvmrc
+          registry-url: https://registry.npmjs.org
+          package-manager-cache: false
+      - name: Install npm with trusted publishing support
+        run: npm install --global npm@11.21.0
+      - run: npm ci
+      - run: npm run build
+      - run: npm test
+      - run: npm run pack:resize-images
+      - name: Stage @theblueboxdev/resize-images
+        working-directory: packages/resize-images
+        run: npm stage publish --access public --tag "${{ inputs.dist_tag }}"
