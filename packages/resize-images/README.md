@@ -27,11 +27,31 @@ Run from the Firebase project root:
 
 ```bash
 firebase functions:kits:install \
-  --template migration \
+  --template installation \
   --no-configure \
-  --package @thebluebox/resize-images@1.0.0-rc.1 \
+  --package @thebluebox/resize-images@1.0.0-rc.2 \
   --project <firebase-project-id> \
   --account <firebase-account>
+```
+
+Use the `installation` template because this package already owns its global
+runtime options. The `migration` template adds another `setGlobalOptions()`
+call and must not be used with this kit.
+
+The Firebase CLI currently scaffolds package-based kits with its newest Node.js
+runtime and a caret dependency range. Before deployment, keep this kit on its
+tested runtime and version by setting these fields in the generated wrapper's
+`package.json`, then refresh its lockfile with `npm install --package-lock-only`:
+
+```json
+{
+  "engines": {
+    "node": "22"
+  },
+  "dependencies": {
+    "@thebluebox/resize-images": "1.0.0-rc.2"
+  }
+}
 ```
 
 After installation, copy the active extension configuration into the kit

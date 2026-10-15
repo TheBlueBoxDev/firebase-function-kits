@@ -1,3 +1,11 @@
+## Version 1.0.0-rc.2
+
+- Add a published `npm-shrinkwrap.json` so Function Kit installations use the
+  dependency versions validated by the maintainer.
+- Use the `installation` template because the package already declares its
+  global Cloud Functions runtime options.
+- Document the generated wrapper's Node.js and exact-version requirements.
+
 ## Version 0.3.6
 
 chore: replace temp file helper dependencies with Node.js built-ins
