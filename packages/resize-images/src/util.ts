@@ -1,0 +1,228 @@
+/**
+ * Copyright 2026 Google LLC
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *    https://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+import * as path from "path";
+
+import { FileMetadata } from "@google-cloud/storage";
+import type { StorageObjectData as ObjectMetadata } from "firebase-functions/v2/storage";
+import * as crypto from "crypto";
+import * as os from "os";
+import * as fs from "fs";
+import { logger } from "firebase-functions/logger";
+import { Bucket } from "@google-cloud/storage";
+import sharp from "sharp";
+import * as logs from "./logs";
+import { supportedContentTypes, supportedExtensions } from "./global";
+
+export const startsWithArray = (
+  userInputPaths: string[],
+  imagePath: string
+) => {
+  for (let userPath of userInputPaths) {
+    const trimmedUserPath = userPath
+      .trim()
+      .replace(/\*/g, "([a-zA-Z0-9_\\-\\+.\\s\\/]*)?");
+
+    const regex = new RegExp("^" + trimmedUserPath + "(?:/.*|$)");
+
+    if (regex.test(imagePath)) {
+      return true;
+    }
+  }
+  return false;
+};
+
+export function countNegativeTraversals(path: string): number {
+  return (path.match(/\/\.\.\//g) || []).length;
+}
+
+export function convertPathToPosix(
+  filePath: string,
+  removeWindowsDrive?: boolean
+): string {
+  const winSep = path.win32.sep;
+  const posixSep = path.posix.sep;
+
+  // likely Windows (as contains windows path separator)
+  if (filePath.includes(winSep) && removeWindowsDrive) {
+    // handle drive (e.g. C:)
+    filePath = filePath.substring(2);
+  }
+
+  // replace Windows path separator with posix path separator
+  return filePath.split(winSep).join(posixSep);
+}
+
+export function convertToObjectMetadata(
+  fileMetadata: FileMetadata
+): ObjectMetadata {
+  const { metadata, ...rest } = fileMetadata;
+
+  // Convert metadata values to strings, defaulting to an empty string for null/undefined values
+  // This is necessary because of a mismatch between the expected type of metadata and the actual type
+  const convertedMetadata = metadata
+    ? Object.fromEntries(
+        Object.entries(metadata).map(([key, value]) => [
+          key,
+          value?.toString() ?? "",
+        ])
+      )
+    : undefined;
+
+  return {
+    kind: "storage#object",
+    id: rest.id,
+    bucket: rest.bucket,
+    storageClass: rest.storageClass,
+    size: Number(rest.size || 0),
+    timeCreated: rest.timeCreated,
+    updated: rest.updated,
+    selfLink: rest.selfLink,
+    name: rest.name,
+    generation: Number(rest.generation || 0),
+    contentType: rest.contentType,
+    metageneration: Number(rest.metageneration || 0),
+    timeDeleted: rest.timeDeleted,
+    timeStorageClassUpdated: rest.timeStorageClassUpdated,
+    md5Hash: rest.md5Hash,
+    mediaLink: rest.mediaLink,
+    contentEncoding: rest.contentEncoding,
+    contentDisposition: rest.contentDisposition,
+    contentLanguage: rest.contentLanguage,
+    cacheControl: rest.cacheControl,
+    metadata: convertedMetadata,
+    crc32c: rest.crc32c,
+    componentCount:
+      rest.componentCount === undefined
+        ? undefined
+        : Number(rest.componentCount),
+    etag: rest.etag,
+    customerEncryption: rest.customerEncryption,
+  };
+}
+
+/**
+ * Replaces the original file with configured placeholder
+ */
+export async function replaceWithConfiguredPlaceholder(
+  localFile: string,
+  bucket: Bucket,
+  placeholderPath: string
+): Promise<void> {
+  try {
+    logger.info(
+      `Replacing filtered image with placeholder from ${placeholderPath}`
+    );
+
+    const placeholderFile = bucket.file(placeholderPath);
+    const tempPlaceholder = path.join(os.tmpdir(), crypto.randomUUID());
+
+    await placeholderFile.download({ destination: tempPlaceholder });
+
+    // Swap original with placeholder
+    fs.unlinkSync(localFile);
+    fs.copyFileSync(tempPlaceholder, localFile);
+    fs.unlinkSync(tempPlaceholder);
+
+    logger.info(`Successfully replaced with placeholder image`);
+  } catch (err) {
+    logger.error(`Error replacing with placeholder:`, err);
+    logger.info(`Falling back to default local placeholder.`);
+
+    // Fall back to default placeholder
+    await replaceWithDefaultPlaceholder(localFile);
+  }
+}
+
+/**
+ * Replaces the original file with default placeholder
+ */
+export async function replaceWithDefaultPlaceholder(
+  localFile: string
+): Promise<void> {
+  const localPlaceholderFile = path.join(__dirname, "placeholder.png");
+
+  // Make a copy of the default placeholder instead of using it directly
+  const tempPlaceholder = path.join(os.tmpdir(), crypto.randomUUID());
+  fs.copyFileSync(localPlaceholderFile, tempPlaceholder);
+
+  // Delete the original file
+  fs.unlinkSync(localFile);
+
+  // Replace with the placeholder
+  fs.renameSync(tempPlaceholder, localFile);
+}
+
+export function validateFile(file: FileMetadata): boolean {
+  return (
+    supportedContentTypes.includes(file.contentType) ||
+    supportedExtensions.includes(path.extname(file.name).toLowerCase())
+  );
+}
+
+export function convertType(buffer, format, allowedOutputOptions, animated) {
+  let outputOptions = {
+    jpeg: {},
+    jpg: {},
+    png: {},
+    webp: {},
+    tiff: {},
+    tif: {},
+    avif: {},
+  };
+  if (allowedOutputOptions) {
+    try {
+      outputOptions = JSON.parse(allowedOutputOptions);
+    } catch (e) {
+      logs.errorOutputOptionsParse(e);
+    }
+  }
+  const { jpeg, jpg, png, webp, tiff, tif, avif } = outputOptions;
+
+  if (format === "jpeg") {
+    return sharp(buffer).jpeg(jpeg).toBuffer();
+  }
+
+  if (format === "jpg") {
+    return sharp(buffer).jpeg(jpg).toBuffer();
+  }
+
+  if (format === "png") {
+    return sharp(buffer).png(png).toBuffer();
+  }
+
+  if (format === "webp") {
+    return sharp(buffer, { animated }).webp(webp).toBuffer();
+  }
+
+  if (format === "tif") {
+    return sharp(buffer).tiff(tif).toBuffer();
+  }
+
+  if (format === "tiff") {
+    return sharp(buffer).tiff(tiff).toBuffer();
+  }
+
+  if (format === "gif") {
+    return sharp(buffer, { animated }).gif().toBuffer();
+  }
+
+  if (format === "avif") {
+    return sharp(buffer).avif(avif).toBuffer();
+  }
+
+  return buffer;
+}
