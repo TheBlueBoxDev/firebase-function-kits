@@ -1,4 +1,4 @@
-## Unreleased
+## Version 1.0.0-rc.3
 
 - Align the development-time Node.js type definitions with the Node.js 22
   Cloud Functions runtime.

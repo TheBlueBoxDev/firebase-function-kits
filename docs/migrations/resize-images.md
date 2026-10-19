@@ -9,8 +9,8 @@ This runbook is specific to Resize Images. Other extension migrations in this
 monorepo have their own guides and skills so their triggers, parameters, IAM,
 and cutover requirements can be handled independently.
 
-The examples use `1.0.0-rc.2`. Pin the exact approved version during a
-migration. Do not use `latest` or a range such as `^1.0.0-rc.2`.
+The examples use `1.0.0-rc.3`. Pin the exact approved version during a
+migration. Do not use `latest` or a range such as `^1.0.0-rc.3`.
 
 ## Repository model
 
@@ -75,7 +75,7 @@ Run from the consuming repository's Firebase root:
 env -u DEBUG firebase functions:kits:install \
   --template installation \
   --no-configure \
-  --package @thebluebox/resize-images@1.0.0-rc.2 \
+  --package @thebluebox/resize-images@1.0.0-rc.3 \
   --project <firebase-project-id> \
   --account <firebase-account>
 ```
@@ -99,14 +99,14 @@ package version:
     "node": "22"
   },
   "dependencies": {
-    "@thebluebox/resize-images": "1.0.0-rc.2"
+    "@thebluebox/resize-images": "1.0.0-rc.3"
   }
 }
 ```
 
 Node.js 22 is not a monorepo-wide default. Resize Images uses it because the
 official `firebase/storage-resize-images@0.3.6` resource declares
-`runtime: nodejs22`, and `@thebluebox/resize-images@1.0.0-rc.2` was packaged and
+`runtime: nodejs22`, and `@thebluebox/resize-images@1.0.0-rc.3` was packaged and
 validated on that runtime. This keeps the first migration aligned with the
 source extension. Recheck the
 [Cloud Run functions runtime schedule](https://cloud.google.com/functions/docs/runtime-support)
