@@ -1,6 +1,6 @@
 {
   "name": "@thebluebox/resize-images",
-  "version": "1.0.0-rc.2",
+  "version": "1.0.0-rc.3",
   "description": "Self-managed Firebase Function Kit for resizing uploaded images",
   "author": "TheBlueBoxDev",
   "contributors": [
