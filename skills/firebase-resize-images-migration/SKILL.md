@@ -1,0 +1,80 @@
+---
+name: firebase-resize-images-migration
+description: Migrate a project from the deprecated firebase/storage-resize-images extension to the self-managed @thebluebox/resize-images Function Kit. Use when inventorying an installed Resize Images extension, installing its npm kit locally, exporting configuration, validating the wrapper, or planning a safe per-environment cutover.
+---
+
+# Firebase Resize Images migration
+
+Apply the repository's
+[migration guide](https://github.com/TheBlueBoxDev/firebase-function-kits/blob/main/docs/migrations/resize-images.md)
+one Firebase project and environment at a time. The rules below are
+self-contained so the skill still works when its directory is installed alone.
+
+## Establish scope first
+
+- Read repository instructions and inspect the current branch and worktree.
+- Identify the Firebase root, project ID, account, extension instance, and kit
+  instance.
+- State which environments are in scope. Do not include production because a
+  test or development project was authorized.
+- Preserve any user restriction on push, deploy, live tests, or extension
+  removal throughout the task.
+
+## Use the package reproducibly
+
+- Use `@thebluebox/resize-images` with the exact version approved for the
+  migration. Do not silently resolve `latest`, `next`, or a caret range.
+- Install with `functions:kits:install --template installation
+  --no-configure`. Do not use the `migration` template because the package owns
+  `setGlobalOptions()`.
+- Require the published package's `npm-shrinkwrap.json`. Stop if Firebase CLI
+  reports it missing; do not bypass the check with `--force`.
+- Set the generated wrapper to Node.js 22 and the exact dependency version.
+  This matches the official Resize Images `0.3.6` runtime and the package's
+  tested baseline; it is not a default for other kits.
+- Before preparing a stable release, check the official runtime support
+  schedule and test a supported successor before the current runtime is
+  decommissioned.
+- Keep `src/index.ts` as a simple package re-export. Remove a generated duplicate
+  `setGlobalOptions()` call.
+- Keep the shared package's optional features intact even when the current
+  project disables them.
+
+## Preserve installed behavior
+
+- Inventory the installed extension before editing configuration.
+- Export configuration with `ext:export --mode functions` and compare every
+  generated parameter with the installed instance.
+- Treat separate Firebase projects as separate migrations and config files.
+- Inspect generated env files for secrets before adding them to Git. The current
+  kit declares no secret parameters, but still perform the inspection.
+- Preserve the migration baseline of `cpu: "gcf_gen1"` and `concurrency: 1`
+  unless the user explicitly requests performance tuning after validation.
+- Interpret `CONTENT_FILTER_LEVEL=OFF` as no Vertex AI filtering at runtime;
+  do not remove the capability from the package.
+
+## Validate without affecting cloud resources
+
+- Run `npm ci` and the wrapper build.
+- Start the Functions Emulator only to verify function discovery and trigger
+  metadata unless an isolated Storage emulator test is configured.
+- Verify the expected bucket, region, memory, paths, sizes, output policy, and
+  content-filter setting.
+- Ensure Git ignores generated `node_modules/` and `lib/` directories and that
+  the worktree contains no credentials or unrelated changes.
+- Run Firebase commands as `env -u DEBUG firebase ...`; debug output can expose
+  inherited credential-bearing environment variables.
+
+## Protect the cutover
+
+- Never push, deploy, uninstall the extension, modify live resources, or test
+  against a live bucket without explicit authorization for that action and
+  Firebase project.
+- Do not run the extension and kit simultaneously under normal uploads. Both
+  consume Storage finalization events and can duplicate processing.
+- Prepare a cutover and rollback plan before requesting deployment approval.
+- Remove the extension only after representative live output from the new
+  function has been accepted.
+
+Finish by reporting changed files, exact package version, local validation,
+remaining cutover steps, and any behavior that could not be tested locally.

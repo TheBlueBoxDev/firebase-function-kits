@@ -14,6 +14,22 @@ Each package has its own README, changelog, tests, version, and npm release.
 Firebase project configuration belongs in the consuming application's
 repository and is not stored in this monorepo.
 
+## Migration resources
+
+Migration material follows the same package-specific structure as the
+monorepo. See the [migration conventions](./docs/migrations/) before adding a
+new extension.
+
+| Extension | Guide | Codex skill |
+| --- | --- | --- |
+| Resize Images | [Migration guide](./docs/migrations/resize-images.md) | [`firebase-resize-images-migration`](./skills/firebase-resize-images-migration) |
+
+To make the skill available outside this checkout, install the
+`skills/firebase-resize-images-migration` directory in the agent's personal
+skills directory or copy it into the consuming repository's skills directory.
+The guide remains the human-readable source of truth; installing the skill does
+not grant permission to push, deploy, or change live Firebase resources.
+
 ## Development
 
 Use Node.js 22 and npm.
