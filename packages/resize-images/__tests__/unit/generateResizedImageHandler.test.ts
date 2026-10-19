@@ -100,13 +100,19 @@ import {
   handleFailedImage,
 } from "../../src/file-operations";
 import { checkImageContent } from "../../src/content-filter";
+import { config } from "../../src/config";
 import { replacePlaceholder } from "../../src/placeholder";
 import { resizeImages } from "../../src/resize-image";
 import * as logs from "../../src/logs";
 
 describe("generateResizedImageHandler", () => {
   beforeEach(() => {
+    jest.restoreAllMocks();
     jest.clearAllMocks();
+    jest
+      .spyOn(config, "contentFilterLevel", "get")
+      .mockReturnValue("BLOCK_ONLY_HIGH");
+    jest.spyOn(config, "customFilterPrompt", "get").mockReturnValue(null);
   });
 
   const mockObject = {
@@ -187,6 +193,32 @@ describe("generateResizedImageHandler", () => {
       mockObject
     );
     expect(handleFailedImage).not.toHaveBeenCalled();
+  });
+
+  test("skips content filtering when filtering is off", async () => {
+    jest.spyOn(config, "contentFilterLevel", "get").mockReturnValue(null);
+    jest.spyOn(config, "customFilterPrompt", "get").mockReturnValue(null);
+    (shouldResize as jest.Mock).mockReturnValue(true);
+    (downloadOriginalFile as jest.Mock).mockResolvedValue([
+      "/tmp/test.jpg",
+      {},
+    ]);
+    (resizeImages as jest.Mock).mockResolvedValue([
+      {
+        status: "fulfilled",
+        value: { success: true },
+      },
+    ]);
+
+    await generateResizedImageHandler(mockObject, false);
+
+    expect(checkImageContent).not.toHaveBeenCalled();
+    expect(resizeImages).toHaveBeenCalledWith(
+      expect.anything(),
+      "/tmp/test.jpg",
+      parsedPathMatcher,
+      mockObject
+    );
   });
 
   test("treats filter errors as failures and skips resizing", async () => {

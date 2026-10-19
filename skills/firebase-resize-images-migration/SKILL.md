@@ -39,6 +39,14 @@ self-contained so the skill still works when its directory is installed alone.
   `setGlobalOptions()` call.
 - Keep the shared package's optional features intact even when the current
   project disables them.
+- Content filtering is optional. With `CONTENT_FILTER_LEVEL=OFF` and an empty
+  `CUSTOM_FILTER_PROMPT`, Genkit/Vertex AI are not loaded. If filtering is
+  enabled, install compatible `genkit` and `@genkit-ai/vertexai` peer
+  dependencies in the wrapper before deploying.
+- After installing dependencies, run `npm audit --omit=dev`, record each
+  advisory, dependency path, applicability/reachability, and available
+  compatible fix. Do not run `npm audit fix` in the consuming wrapper; fixes
+  belong in a reviewed Function Kit release.
 
 ## Preserve installed behavior
 
@@ -64,6 +72,15 @@ self-contained so the skill still works when its directory is installed alone.
   the worktree contains no credentials or unrelated changes.
 - Run Firebase commands as `env -u DEBUG firebase ...`; debug output can expose
   inherited credential-bearing environment variables.
+- After deployment, inspect the Eventarc trigger identity and target Cloud Run
+  service IAM policy. An active function in `functions:list` does not prove
+  event delivery; verify an authorized matching upload, resulting variants,
+  `resizedImage=true`, and Eventarc/Cloud Run logs for 401/403 or
+  `run.routes.invoke` failures.
+- Do not assume Firebase CLI always creates `roles/run.invoker`; behavior
+  depends on CLI version, runtime, and trigger configuration. If logs confirm
+  the missing permission, grant the role to the trigger service account on
+  only the kit's Cloud Run service, never project-wide.
 
 ## Protect the cutover
 
@@ -75,6 +92,16 @@ self-contained so the skill still works when its directory is installed alone.
 - Prepare a cutover and rollback plan before requesting deployment approval.
 - Remove the extension only after representative live output from the new
   function has been accepted.
+- To uninstall a remote extension instance, run `ext:uninstall` with
+  `--immediate`; do not treat deleting a local manifest entry as remote
+  uninstallation:
+
+  ```bash
+  env -u DEBUG firebase ext:uninstall <instance> \
+    --immediate \
+    --project <project> \
+    --account <account>
+  ```
 
 Finish by reporting changed files, exact package version, local validation,
 remaining cutover steps, and any behavior that could not be tested locally.

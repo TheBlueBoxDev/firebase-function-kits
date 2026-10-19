@@ -1,6 +1,6 @@
 {
   "name": "@thebluebox/resize-images",
-  "version": "1.0.0-rc.4",
+  "version": "1.0.0-rc.5",
   "description": "Self-managed Firebase Function Kit for resizing uploaded images",
   "author": "TheBlueBoxDev",
   "contributors": [
@@ -46,21 +46,31 @@
     "generate-readme": "firebase ext:info .. --markdown > ../README.md"
   },
   "dependencies": {
-    "@genkit-ai/vertexai": "^1.42.0",
     "firebase-admin": "^14.2.0",
     "firebase-functions": "^7.4.0",
-    "genkit": "^1.42.0",
     "p-queue": "^6.6.2",
     "sharp": "^0.35.5"
   },
   "peerDependencies": {
-    "firebase-functions": "^7.4.0"
+    "firebase-functions": "^7.4.0",
+    "@genkit-ai/vertexai": "^1.42.0",
+    "genkit": "^1.42.0"
+  },
+  "peerDependenciesMeta": {
+    "@genkit-ai/vertexai": {
+      "optional": true
+    },
+    "genkit": {
+      "optional": true
+    }
   },
   "devDependencies": {
     "@types/jest": "^29.5.14",
     "@types/node": "^22.20.5",
     "child_process": "^1.0.2",
     "dotenv": "^16.4.7",
+    "@genkit-ai/vertexai": "^1.42.0",
+    "genkit": "^1.42.0",
     "firebase": "^11.3.1",
     "image-size": "^1.2.0",
     "image-type": "^4.1.0",

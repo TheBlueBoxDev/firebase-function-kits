@@ -29,7 +29,7 @@ Run from the Firebase project root:
 firebase functions:kits:install \
   --template installation \
   --no-configure \
-  --package @thebluebox/resize-images@1.0.0-rc.4 \
+  --package @thebluebox/resize-images@1.0.0-rc.5 \
   --project <firebase-project-id> \
   --account <firebase-account>
 ```
@@ -49,7 +49,7 @@ tested runtime and version by setting these fields in the generated wrapper's
     "node": "22"
   },
   "dependencies": {
-    "@thebluebox/resize-images": "1.0.0-rc.4"
+    "@thebluebox/resize-images": "1.0.0-rc.5"
   }
 }
 ```
@@ -108,10 +108,49 @@ The Firebase CLI stores instance configuration in project-specific `.env`
 files. Do not commit secret values. This kit currently declares no secret
 parameters.
 
+### Optional content-filter dependencies
+
+Content filtering is disabled by default. When `CONTENT_FILTER_LEVEL=OFF` and
+`CUSTOM_FILTER_PROMPT` is empty, the function does not load Genkit or Vertex AI.
+These are optional peer dependencies so projects that do not enable filtering
+do not install their large dependency trees as production dependencies.
+
+To enable either the Vertex AI threshold filter or a custom prompt, add
+compatible versions of both dependencies to the generated wrapper:
+
+```bash
+npm install --save-exact genkit@1.42.0 @genkit-ai/vertexai@1.42.0
+```
+
+Then configure `CONTENT_FILTER_LEVEL` or `CUSTOM_FILTER_PROMPT` and deploy. The
+filter-enabled dependency tree must be audited separately; known transitive
+Genkit/OpenTelemetry advisories are not proof of exploitability in this usage.
+
+### Dependency audit review
+
+As of 2026-10-19, `npm audit --omit=dev` reported no advisories in the default
+production dependency graph. In a local consumer install, the previous
+`1.0.0-rc.4` graph installed 640 packages and occupied 803 MB in
+`node_modules`; the `1.0.0-rc.5` default graph installed 257 packages and
+occupied 115 MB. These are host-local dependency-tree measurements. The
+default package import was verified not to load Genkit/Vertex AI; local import
+timings varied too much to present as a reliable cold-start estimate. Measure
+Cloud Run cold starts after deployment in a representative project.
+
+Installing the optional Genkit 1.42.0 and Vertex AI 1.42.0 peers for content
+filtering produced 65 current advisories (7 high, 58 moderate, no critical) in
+the isolated consumer audit. The high findings are in Genkit/OpenTelemetry
+dependency paths, and npm reported no fix available for those high entries.
+The migration's earlier `rc.4` wrapper audit reported 69 findings; exact counts
+vary with the installed lockfile and npm advisory database. These findings do
+not establish that vulnerable code is reachable in this filtering use case.
+No incompatible override or `npm audit fix` was applied. Re-run the audit and
+review reachability before enabling the optional feature.
+
 ## IAM and APIs
 
 The kit declares the following requirements in code so Firebase CLI can
-provision its managed runtime service account:
+provision the managed runtime service account:
 
 - `roles/storage.admin`
 - `roles/aiplatform.user`
@@ -120,6 +159,66 @@ provision its managed runtime service account:
 
 When a custom Eventarc channel is configured, it also declares
 `roles/eventarc.publisher` and `eventarcpublishing.googleapis.com`.
+
+These declarations do not prove that the Eventarc trigger identity can invoke
+the Cloud Run service. Firebase CLI/deploy behavior can depend on the CLI
+version, runtime, and trigger configuration; after every deployment, inspect
+the deployed trigger identity and the service's IAM policy rather than
+assuming either that the binding is always created or that every project needs
+a manual grant.
+
+The Firebase CLI source has an IAM path that grants project-level
+`roles/run.invoker` and `roles/eventarc.eventReceiver` to the default Compute
+Engine service account
+([`checkIam.ts`](https://github.com/firebase/firebase-tools/blob/1d5f141720cb6e7e453a6cdca9d7dcc56faa4cbc/src/deploy/functions/checkIam.ts)).
+That is not a guarantee that every Function Kit deploy path grants
+`roles/run.invoker` to the actual trigger identity on this specific Cloud Run
+service. The kit therefore does not add a broad `requiresRole("roles/run.invoker")`
+declaration.
+
+`firebase functions:list` reporting an active function confirms control-plane
+deployment, not successful event delivery. For an authorized live test, upload
+a unique image that matches the configured filters and confirm the expected
+resized objects and metadata (including `resizedImage=true`). Check the
+Eventarc trigger and Cloud Run service logs in Cloud Logging for delivery
+errors, HTTP 401/403 responses, and `run.routes.invoke` permission failures.
+See Google's [Eventarc roles and permissions
+guide](https://cloud.google.com/eventarc/docs/roles-permissions) for the
+distinction between the trigger's event-receiver permission and the target
+service's invoker permission. In Logs Explorer, inspect entries for both the
+Eventarc trigger and the Cloud Run service; search for the trigger/service
+name, `run.routes.invoke`, authentication failures, and HTTP 401/403 statuses.
+For Cloud Run request logs, a focused query is:
+
+```text
+resource.type="cloud_run_revision"
+resource.labels.service_name="<cloud-run-service>"
+(httpRequest.status=401 OR httpRequest.status=403 OR textPayload:"run.routes.invoke")
+```
+
+Inspect the trigger identity and service policy with:
+
+```bash
+gcloud eventarc triggers list --location <region> --project <project>
+gcloud eventarc triggers describe <trigger> \
+  --location <region> --project <project> \
+  --format="yaml(name,serviceAccount,conditions,transport)"
+gcloud run services get-iam-policy <cloud-run-service> \
+  --region <region> --project <project>
+```
+
+Only if the delivery logs and IAM policy confirm a missing Cloud Run invoke
+grant, grant `roles/run.invoker` to the trigger's service account on this kit's
+Cloud Run service only:
+
+```bash
+gcloud run services add-iam-policy-binding <cloud-run-service> \
+  --region <region> --project <project> \
+  --member="serviceAccount:<trigger-service-account>" \
+  --role="roles/run.invoker"
+```
+
+Do not grant this role project-wide as a workaround.
 
 ## Differences from the extension
 

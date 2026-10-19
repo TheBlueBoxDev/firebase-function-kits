@@ -9,8 +9,8 @@ This runbook is specific to Resize Images. Other extension migrations in this
 monorepo have their own guides and skills so their triggers, parameters, IAM,
 and cutover requirements can be handled independently.
 
-The examples use `1.0.0-rc.4`. Pin the exact approved version during a
-migration. Do not use `latest` or a range such as `^1.0.0-rc.4`.
+The examples use `1.0.0-rc.5`. Pin the exact approved version during a
+migration. Do not use `latest` or a range such as `^1.0.0-rc.5`.
 
 ## Repository model
 
@@ -75,7 +75,7 @@ Run from the consuming repository's Firebase root:
 env -u DEBUG firebase functions:kits:install \
   --template installation \
   --no-configure \
-  --package @thebluebox/resize-images@1.0.0-rc.4 \
+  --package @thebluebox/resize-images@1.0.0-rc.5 \
   --project <firebase-project-id> \
   --account <firebase-account>
 ```
@@ -99,14 +99,14 @@ package version:
     "node": "22"
   },
   "dependencies": {
-    "@thebluebox/resize-images": "1.0.0-rc.4"
+    "@thebluebox/resize-images": "1.0.0-rc.5"
   }
 }
 ```
 
 Node.js 22 is not a monorepo-wide default. Resize Images uses it because the
 official `firebase/storage-resize-images@0.3.6` resource declares
-`runtime: nodejs22`, and `@thebluebox/resize-images@1.0.0-rc.4` was packaged and
+`runtime: nodejs22`, and `@thebluebox/resize-images@1.0.0-rc.5` is packaged and
 validated on that runtime. This keeps the first migration aligned with the
 source extension. Recheck the
 [Cloud Run functions runtime schedule](https://cloud.google.com/functions/docs/runtime-support)
@@ -153,6 +153,21 @@ parameters, but the review remains required.
 content-filter implementation in the shared package because other projects can
 enable it.
 
+With `CONTENT_FILTER_LEVEL=OFF` and an empty `CUSTOM_FILTER_PROMPT`, the
+function skips loading Genkit/Vertex AI. If either content-filter setting is
+enabled, install the optional peer dependencies in the wrapper with compatible
+versions, for example:
+
+```bash
+npm install --save-exact genkit@1.42.0 @genkit-ai/vertexai@1.42.0
+```
+
+Run `npm audit --omit=dev` in the wrapper after installation. Record each
+finding, the affected dependency path, whether vulnerable code is reachable
+with this configuration, and the compatible fix status. Do not run `npm audit
+fix` in the consuming wrapper; dependency changes must be reviewed, tested,
+and published with the Function Kit package.
+
 ## 6. Validate locally
 
 Confirm that:
@@ -173,6 +188,32 @@ Run emulator commands with `DEBUG` unset. Discovering the function validates
 loading and trigger metadata; it does not prove end-to-end image processing.
 Do not point local tests at a live bucket.
 
+After an authorized deployment, verify that the Eventarc trigger is active and
+inspect its service account and the target Cloud Run service's IAM policy.
+Firebase CLI behavior for creating the trigger and related IAM bindings can
+vary with CLI version, runtime, and trigger configuration; do not assume that
+the `roles/eventarc.eventReceiver` declaration necessarily supplies
+`roles/run.invoker` to the identity Eventarc uses. Trigger status alone does
+not prove delivery. For an approved live test, upload a unique matching image,
+confirm the output variants and `resizedImage=true`, and check Eventarc and
+Cloud Run logs for delivery errors, HTTP 401/403 responses, or missing
+`run.routes.invoke`.
+
+If and only if the logs and service policy confirm the missing permission,
+grant `roles/run.invoker` to the trigger service account on this kit's specific
+Cloud Run service. Do not grant it project-wide. See the package README for
+commands to inspect and update this service-level binding.
+
+The Firebase CLI source includes an IAM path that grants project-level
+`roles/run.invoker` and `roles/eventarc.eventReceiver` to the default Compute
+Engine service account
+([`checkIam.ts`](https://github.com/firebase/firebase-tools/blob/1d5f141720cb6e7e453a6cdca9d7dcc56faa4cbc/src/deploy/functions/checkIam.ts)).
+This does not guarantee that every Function Kit deployment binds the actual
+trigger identity on the target Cloud Run service. Verify the effective
+identity and policy for the CLI version and deployment path in use. Google
+documents the separate
+[Eventarc and Cloud Run IAM requirements](https://cloud.google.com/eventarc/docs/roles-permissions).
+
 ## 7. Plan the cutover
 
 Push, deployment, live tests, and extension removal are separate authorized
@@ -186,6 +227,17 @@ For a controlled cutover:
    error behavior.
 4. Remove the old extension only after the new function is accepted.
 5. Resume normal uploads and monitor failures, duration, and cost.
+
+To remove the remote extension instance, run this from the Firebase project
+root. `--immediate` requests remote uninstallation; it does not rely on the
+instance being registered in the local `firebase.json` manifest:
+
+```bash
+env -u DEBUG firebase ext:uninstall <extension-instance-id> \
+  --immediate \
+  --project <firebase-project-id> \
+  --account <firebase-account>
+```
 
 Avoid leaving both processors active for normal traffic: the old extension and
 the new function listen to the same Storage finalization events and can perform

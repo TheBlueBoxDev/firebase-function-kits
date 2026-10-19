@@ -1,3 +1,10 @@
+## Version 1.0.0-rc.5
+
+- Defer loading Genkit and Vertex AI until content filtering is enabled, and
+  make those packages optional peer dependencies.
+- Document Eventarc-to-Cloud-Run IAM verification, trigger delivery checks,
+  least-scope `roles/run.invoker` remediation, and production dependency audits.
+
 ## Version 1.0.0-rc.4
 
 - Grant the managed Functions service account the Eventarc event receiver role
