@@ -18,7 +18,7 @@
       },
       "devDependencies": {
         "@types/jest": "^29.5.14",
-        "@types/node": "^20.10.3",
+        "@types/node": "^22.20.5",
         "child_process": "^1.0.2",
         "dotenv": "^16.4.7",
         "firebase": "^11.3.1",
@@ -1305,6 +1305,15 @@
         "partial-json": "^0.1.7",
         "uri-templates": "^0.2.0",
         "uuid": "^10.0.0"
+      }
+    },
+    "node_modules/@genkit-ai/ai/node_modules/@types/node": {
+      "version": "20.19.43",
+      "resolved": "https://registry.npmjs.org/@types/node/-/node-20.19.43.tgz",
+      "integrity": "sha512-6oYBAi5ikg4Pl+kGsoYtawUMBT2zZMCvPNF7pVLnHZfd1zf38DRiWn/gT01RYCdUqkv7Fhr+C9ot4/tb+2sVvA==",
+      "license": "MIT",
+      "dependencies": {
+        "undici-types": "~6.21.0"
       }
     },
     "node_modules/@genkit-ai/ai/node_modules/uuid": {
@@ -5923,9 +5932,9 @@
       }
     },
     "node_modules/@types/node": {
-      "version": "20.19.43",
-      "resolved": "https://registry.npmjs.org/@types/node/-/node-20.19.43.tgz",
-      "integrity": "sha512-6oYBAi5ikg4Pl+kGsoYtawUMBT2zZMCvPNF7pVLnHZfd1zf38DRiWn/gT01RYCdUqkv7Fhr+C9ot4/tb+2sVvA==",
+      "version": "22.20.5",
+      "resolved": "https://registry.npmjs.org/@types/node/-/node-22.20.5.tgz",
+      "integrity": "sha512-U2+DNr+wSjpsTS/wZGYHq7GcwfuSmKiKvoPvK22zwTlRhU91yOniN4qRR5KhIjvif7ysw/dz/hKmfDH0Ris4aA==",
       "license": "MIT",
       "dependencies": {
         "undici-types": "~6.21.0"
