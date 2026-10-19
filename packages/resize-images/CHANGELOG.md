@@ -1,3 +1,8 @@
+## Unreleased
+
+- Align the development-time Node.js type definitions with the Node.js 22
+  Cloud Functions runtime.
+
 ## Version 1.0.0-rc.2
 
 - Add a published `npm-shrinkwrap.json` so Function Kit installations use the
