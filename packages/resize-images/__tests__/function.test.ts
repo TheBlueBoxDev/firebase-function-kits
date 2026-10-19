@@ -63,5 +63,9 @@ describe("extension", () => {
   test("'generateResizedImage' function is exported", () => {
     const exportedFunctions = jest.requireActual("../src");
     expect(exportedFunctions.generateResizedImage).toBeInstanceOf(Function);
+    const { requiresRole } = jest.requireMock("firebase-functions");
+    expect(requiresRole).toHaveBeenCalledWith(
+      "roles/eventarc.eventReceiver"
+    );
   });
 });

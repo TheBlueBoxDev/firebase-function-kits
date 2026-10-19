@@ -1,12 +1,12 @@
 {
   "name": "@thebluebox/resize-images",
-  "version": "1.0.0-rc.3",
+  "version": "1.0.0-rc.4",
   "lockfileVersion": 3,
   "requires": true,
   "packages": {
     "": {
       "name": "@thebluebox/resize-images",
-      "version": "1.0.0-rc.3",
+      "version": "1.0.0-rc.4",
       "license": "Apache-2.0",
       "dependencies": {
         "@genkit-ai/vertexai": "^1.42.0",

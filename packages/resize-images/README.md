@@ -29,7 +29,7 @@ Run from the Firebase project root:
 firebase functions:kits:install \
   --template installation \
   --no-configure \
-  --package @thebluebox/resize-images@1.0.0-rc.3 \
+  --package @thebluebox/resize-images@1.0.0-rc.4 \
   --project <firebase-project-id> \
   --account <firebase-account>
 ```
@@ -49,7 +49,7 @@ tested runtime and version by setting these fields in the generated wrapper's
     "node": "22"
   },
   "dependencies": {
-    "@thebluebox/resize-images": "1.0.0-rc.3"
+    "@thebluebox/resize-images": "1.0.0-rc.4"
   }
 }
 ```
@@ -115,6 +115,7 @@ provision its managed runtime service account:
 
 - `roles/storage.admin`
 - `roles/aiplatform.user`
+- `roles/eventarc.eventReceiver`
 - `storage-component.googleapis.com`
 
 When a custom Eventarc channel is configured, it also declares

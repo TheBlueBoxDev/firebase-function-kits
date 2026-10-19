@@ -86,6 +86,7 @@ requiresAPI(
 );
 requiresRole("roles/storage.admin");
 requiresRole("roles/aiplatform.user");
+requiresRole("roles/eventarc.eventReceiver");
 
 if (process.env.EVENTARC_CHANNEL) {
   requiresAPI(

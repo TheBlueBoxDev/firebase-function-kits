@@ -1,3 +1,8 @@
+## Version 1.0.0-rc.4
+
+- Grant the managed Functions service account the Eventarc event receiver role
+  required to create the second-generation Cloud Storage trigger.
+
 ## Version 1.0.0-rc.3
 
 - Align the development-time Node.js type definitions with the Node.js 22
