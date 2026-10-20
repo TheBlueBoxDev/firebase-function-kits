@@ -98,10 +98,10 @@ both cases by pausing matching writes during the ownership change.
 - Do not introduce a canary prefix, alternate bucket, blue-green route, or
   application path change as part of this workflow. The replacement must keep
   the installed extension's bucket and path behavior.
-- Before requesting cutover approval, identify how the application will pause
-  all writes that match the extension's effective include/exclude paths. A
-  pause is not established until every relevant writer is controlled,
-  including clients, backend jobs, imports, and administrator tooling.
+- Before starting the cutover, obtain explicit confirmation that all writes
+  matching the extension's effective include/exclude paths are paused. Treat
+  that confirmation as sufficient and keep writes paused until validation
+  completes.
 - Save the extension's complete exported configuration and verify a rollback
   command or procedure before changing any live resource.
 - Choose an absolute, reserved `INCLUDE_PATH_LIST` value that no writer can
@@ -114,9 +114,9 @@ both cases by pausing matching writes during the ownership change.
 
 Perform an authorized cutover in this order:
 
-1. Pause every writer whose objects match the configured image paths and
-   record the cutoff time.
-2. Wait for uploads accepted before the cutoff to finish processing. Compare
+1. Obtain explicit confirmation that all writes matching the configured image
+   paths are paused.
+2. Wait for previously accepted uploads to finish processing. Compare
    expected objects with extension results and inspect logs for unfinished
    work or retries. Keep writes paused if the drain cannot be established.
 3. Reconfigure the extension's `INCLUDE_PATH_LIST` to the reserved inactive
