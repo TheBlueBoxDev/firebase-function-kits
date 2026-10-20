@@ -82,19 +82,79 @@ self-contained so the skill still works when its directory is installed alone.
   the missing permission, grant the role to the trigger service account on
   only the kit's Cloud Run service, never project-wide.
 
-## Protect the cutover
+## Use a controlled same-path cutover
 
-- Never push, deploy, uninstall the extension, modify live resources, or test
-  against a live bucket without explicit authorization for that action and
-  Firebase project.
-- Do not run the extension and kit simultaneously under normal uploads. Both
-  consume Storage finalization events and can duplicate processing.
-- Prepare a cutover and rollback plan before requesting deployment approval.
-- Remove the extension only after representative live output from the new
-  function has been accepted.
-- To uninstall a remote extension instance, run `ext:uninstall` with
-  `--immediate`; do not treat deleting a local manifest entry as remote
-  uninstallation:
+This migration preserves the existing bucket and image paths. The extension
+and the kit use independent Storage finalization triggers, and updating their
+configurations is not atomic. Deploying the kit first creates an overlap in
+which both processors can resize the same upload; disabling the extension
+first creates a gap in which neither processor handles new uploads. Prevent
+both cases by pausing matching writes during the ownership change.
+
+- Never push, deploy, reconfigure or uninstall the extension, modify live
+  resources, pause uploads, resume uploads, or test against a live bucket
+  without explicit authorization for that individual action and Firebase
+  project.
+- Do not introduce a canary prefix, alternate bucket, blue-green route, or
+  application path change as part of this workflow. The replacement must keep
+  the installed extension's bucket and path behavior.
+- Before requesting cutover approval, identify how the application will pause
+  all writes that match the extension's effective include/exclude paths. A
+  pause is not established until every relevant writer is controlled,
+  including clients, backend jobs, imports, and administrator tooling.
+- Save the extension's complete exported configuration and verify a rollback
+  command or procedure before changing any live resource.
+- Choose an absolute, reserved `INCLUDE_PATH_LIST` value that no writer can
+  use. This inactive path is used to keep a processor deployed for rollback
+  while preventing it from handling normal uploads. Record the original path
+  configuration separately; never overwrite the only copy.
+- Define the representative test objects, expected output names, dimensions,
+  formats, metadata, deletion behavior, logs, and acceptance window before the
+  pause begins.
+
+Perform an authorized cutover in this order:
+
+1. Pause every writer whose objects match the configured image paths and
+   record the cutoff time.
+2. Wait for uploads accepted before the cutoff to finish processing. Compare
+   expected objects with extension results and inspect logs for unfinished
+   work or retries. Keep writes paused if the drain cannot be established.
+3. Reconfigure the extension's `INCLUDE_PATH_LIST` to the reserved inactive
+   path. Preserve every other parameter, wait for the update to complete, and
+   verify the deployed extension configuration before continuing.
+4. Deploy the kit with the final exported bucket, includes, excludes, sizes,
+   output policy, and other approved parameters. Do not deploy temporary
+   canary paths.
+5. Verify the Eventarc trigger identity, Cloud Run IAM policy, and delivery
+   logs. An active function listing alone is not acceptance.
+6. With normal writers still paused and separate authorization for the live
+   test, upload representative disposable images to the real paths. Confirm
+   that only the kit processes them and that every predefined result matches.
+7. If the test passes, resume the paused writers only after explicit approval.
+   Keep the extension installed on its inactive path for the agreed rollback
+   observation window.
+
+If validation fails, keep writes paused and roll back in this order:
+
+1. Reconfigure the kit to the reserved inactive include path and deploy that
+   configuration so it cannot process normal uploads.
+2. Restore the extension's complete saved configuration and wait for its
+   update to finish.
+3. Upload one authorized representative image, verify that only the extension
+   processes it successfully, and inspect its logs.
+4. Resume writers only after the extension has been accepted and explicit
+   approval has been given.
+
+This cutover prevents overlap between the extension and kit for controlled new
+uploads. It does not change Eventarc's at-least-once delivery semantics; retry
+or duplicate delivery to one processor remains possible and must not be
+misdiagnosed as cross-processor overlap.
+
+Remove the extension only after the observation window and representative live
+output from the kit have been accepted. Treat removal as a separate authorized
+action. To uninstall a remote extension instance, run `ext:uninstall` with
+`--immediate`; do not treat deleting a local manifest entry as remote
+uninstallation:
 
   ```bash
   env -u DEBUG firebase ext:uninstall <instance> \
