@@ -41,7 +41,6 @@ import {
 import * as logs from "./logs";
 import { shouldResize } from "./filters";
 import * as events from "./events";
-import { checkImageContent } from "./content-filter";
 import { replacePlaceholder } from "./placeholder";
 import {
   deleteRemoteFile,
@@ -135,46 +134,51 @@ export const generateResizedImageHandler = async (
     let filterErrored = false;
     let blockedImageStored = false;
 
-    try {
-      // shouldResize() above already rejects objects without a valid
-      // image/* contentType, so it is guaranteed defined here. The handler
-      // is exported and unit-tested directly, so assert the invariant
-      // explicitly rather than passing a possibly-undefined value through.
-      const passed = await checkImageContent(
-        localOriginalFile,
-        config.contentFilterLevel,
-        config.customFilterPrompt,
-        object.contentType!
-      );
-      if (!passed) {
-        blockedByFilter = true;
-        logs.contentFilterRejected(object.name);
-
-        await handleFailedImage(
-          bucket,
+    const filterLevel = config.contentFilterLevel;
+    const filterPrompt = config.customFilterPrompt;
+    if (filterLevel !== null || filterPrompt !== null) {
+      try {
+        const { checkImageContent } = await import("./content-filter");
+        // shouldResize() above already rejects objects without a valid
+        // image/* contentType, so it is guaranteed defined here. The handler
+        // is exported and unit-tested directly, so assert the invariant
+        // explicitly rather than passing a possibly-undefined value through.
+        const passed = await checkImageContent(
           localOriginalFile,
-          object,
-          parsedPath,
-          true
+          filterLevel,
+          filterPrompt,
+          object.contentType!
         );
-        blockedImageStored = true;
+        if (!passed) {
+          blockedByFilter = true;
+          logs.contentFilterRejected(object.name);
 
-        localProcessingFile = `${localOriginalFile}-placeholder`;
-        fs.copyFileSync(localOriginalFile, localProcessingFile);
-        try {
-          await replacePlaceholder(
-            localProcessingFile,
+          await handleFailedImage(
             bucket,
-            config.placeholderImagePath
+            localOriginalFile,
+            object,
+            parsedPath,
+            true
           );
-        } catch (err) {
-          logs.placeholderReplaceError(err);
-          filterErrored = true;
+          blockedImageStored = true;
+
+          localProcessingFile = `${localOriginalFile}-placeholder`;
+          fs.copyFileSync(localOriginalFile, localProcessingFile);
+          try {
+            await replacePlaceholder(
+              localProcessingFile,
+              bucket,
+              config.placeholderImagePath
+            );
+          } catch (err) {
+            logs.placeholderReplaceError(err);
+            filterErrored = true;
+          }
         }
+      } catch (err) {
+        logs.contentFilterErrored(err);
+        filterErrored = true;
       }
-    } catch (err) {
-      logs.contentFilterErrored(err);
-      filterErrored = true;
     }
 
     const fileToResize = localProcessingFile ?? localOriginalFile;
