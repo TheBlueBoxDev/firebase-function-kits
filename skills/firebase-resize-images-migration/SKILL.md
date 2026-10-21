@@ -25,7 +25,7 @@ self-contained so the skill still works when its directory is installed alone.
 - Use `@thebluebox/resize-images` with the exact version approved for the
   migration. Do not silently resolve `latest`, `next`, or a caret range.
 - Install with `functions:kits:install --template installation
-  --no-configure`. Do not use the `migration` template because the package owns
+--no-configure`. Do not use the `migration` template because the package owns
   `setGlobalOptions()`.
 - Require the published package's `npm-shrinkwrap.json`. Stop if Firebase CLI
   reports it missing; do not bypass the check with `--force`.
@@ -93,12 +93,12 @@ both cases by pausing matching writes during the ownership change.
 
 - Never push, deploy, reconfigure or uninstall the extension, modify live
   resources, pause uploads, resume uploads, or test against a live bucket
-  without explicit authorization for that individual action and Firebase
+  without authorization for that individual action and Firebase
   project.
 - Do not introduce a canary prefix, alternate bucket, blue-green route, or
   application path change as part of this workflow. The replacement must keep
   the installed extension's bucket and path behavior.
-- Before starting the cutover, obtain explicit confirmation that all writes
+- Before starting the cutover, obtain confirmation that all writes
   matching the extension's effective include/exclude paths are paused. Treat
   that confirmation as sufficient and keep writes paused until validation
   completes.
@@ -109,12 +109,12 @@ both cases by pausing matching writes during the ownership change.
   while preventing it from handling normal uploads. Record the original path
   configuration separately; never overwrite the only copy.
 - Define the representative test objects, expected output names, dimensions,
-  formats, metadata, deletion behavior, logs, and acceptance window before the
+  formats, metadata, deletion behavior, and logs, before the
   pause begins.
 
 Perform an authorized cutover in this order:
 
-1. Obtain explicit confirmation that all writes matching the configured image
+1. Obtain confirmation that all writes matching the configured image
    paths are paused.
 2. Wait for previously accepted uploads to finish processing. Compare
    expected objects with extension results and inspect logs for unfinished
@@ -130,9 +130,7 @@ Perform an authorized cutover in this order:
 6. With normal writers still paused and separate authorization for the live
    test, upload representative disposable images to the real paths. Confirm
    that only the kit processes them and that every predefined result matches.
-7. If the test passes, resume the paused writers only after explicit approval.
-   Keep the extension installed on its inactive path for the agreed rollback
-   observation window.
+7. If the test passes, resume the paused writers only after approval.
 
 If validation fails, keep writes paused and roll back in this order:
 
@@ -142,7 +140,7 @@ If validation fails, keep writes paused and roll back in this order:
    update to finish.
 3. Upload one authorized representative image, verify that only the extension
    processes it successfully, and inspect its logs.
-4. Resume writers only after the extension has been accepted and explicit
+4. Resume writers only after the extension has been accepted and
    approval has been given.
 
 This cutover prevents overlap between the extension and kit for controlled new
@@ -150,18 +148,18 @@ uploads. It does not change Eventarc's at-least-once delivery semantics; retry
 or duplicate delivery to one processor remains possible and must not be
 misdiagnosed as cross-processor overlap.
 
-Remove the extension only after the observation window and representative live
+Remove the extension only and representative live
 output from the kit have been accepted. Treat removal as a separate authorized
 action. To uninstall a remote extension instance, run `ext:uninstall` with
 `--immediate`; do not treat deleting a local manifest entry as remote
 uninstallation:
 
-  ```bash
-  env -u DEBUG firebase ext:uninstall <instance> \
-    --immediate \
-    --project <project> \
-    --account <account>
-  ```
+```bash
+env -u DEBUG firebase ext:uninstall <instance> \
+  --immediate \
+  --project <project> \
+  --account <account>
+```
 
 Finish by reporting changed files, exact package version, local validation,
 remaining cutover steps, and any behavior that could not be tested locally.
