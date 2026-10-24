@@ -161,6 +161,19 @@ Genkit/OpenTelemetry advisories are not proof of exploitability in this usage.
 
 ### Dependency audit review
 
+The rc.6 lockfiles update transitive `body-parser` to 2.4.0 through Firebase
+Functions/Express and to 1.20.9 through the optional Genkit dependency tree.
+These versions address [CVE-2026-111181](https://github.com/advisories/GHSA-27r3-jxmh-p828),
+a denial of service involving malformed compressed request bodies. Existing
+consumers must install the updated package and redeploy to use the corrected
+dependencies. This dependency fix is separate from the Node.js runtime patches
+[described above](#nodejs-security-updates).
+
+On 2026-10-24, `npm audit --omit=dev` reported zero advisories for both the
+updated repository lockfile and an isolated default consumer installation of
+the rc.6 tarball. The consumer installed `body-parser@2.4.0`. This result does
+not cover the optional Genkit/Vertex AI dependency graph.
+
 As of 2026-10-19, `npm audit --omit=dev` reported no advisories in the default
 production dependency graph. In a local consumer install, the previous
 `1.0.0-rc.4` graph installed 640 packages and occupied 803 MB in
