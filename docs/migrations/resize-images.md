@@ -9,8 +9,8 @@ This runbook is specific to Resize Images. Other extension migrations in this
 monorepo have their own guides and skills so their triggers, parameters, IAM,
 and cutover requirements can be handled independently.
 
-The examples use `1.0.0-rc.5`. Pin the exact approved version during a
-migration. Do not use `latest` or a range such as `^1.0.0-rc.5`.
+The examples use `1.0.0-rc.6`. Pin the exact approved version during a
+migration. Do not use `latest` or a range such as `^1.0.0-rc.6`.
 
 ## Repository model
 
@@ -75,7 +75,7 @@ Run from the consuming repository's Firebase root:
 env -u DEBUG firebase functions:kits:install \
   --template installation \
   --no-configure \
-  --package @thebluebox/resize-images@1.0.0-rc.5 \
+  --package @thebluebox/resize-images@1.0.0-rc.6 \
   --project <firebase-project-id> \
   --account <firebase-account>
 ```
@@ -99,19 +99,25 @@ package version:
     "node": "22"
   },
   "dependencies": {
-    "@thebluebox/resize-images": "1.0.0-rc.5"
+    "@thebluebox/resize-images": "1.0.0-rc.6"
   }
 }
 ```
 
 Node.js 22 is not a monorepo-wide default. Resize Images uses it because the
 official `firebase/storage-resize-images@0.3.6` resource declares
-`runtime: nodejs22`, and `@thebluebox/resize-images@1.0.0-rc.5` is packaged and
+`runtime: nodejs22`, and `@thebluebox/resize-images@1.0.0-rc.6` is packaged and
 validated on that runtime. This keeps the first migration aligned with the
 source extension. Recheck the
 [Cloud Run functions runtime schedule](https://cloud.google.com/functions/docs/runtime-support)
 before each stable package release and plan a separately tested runtime upgrade
 before Node.js 22 is decommissioned.
+
+Use Node.js 22.23.4 or a newer 22.x release locally and verify the deployed
+runtime is patched before rollout. Keep the wrapper engine set to `"22"` to
+select the managed runtime family; it does not select a patch version. Follow
+the package's [runtime security checks](../../packages/resize-images/README.md#nodejs-security-updates),
+including its automatic versus on-deploy update policy.
 
 Its `src/index.ts` should only re-export the package:
 
