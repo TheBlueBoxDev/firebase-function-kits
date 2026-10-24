@@ -1,3 +1,17 @@
+## Version 1.0.0-rc.6
+
+- Update the development-only dotenv dependency to 18.0.8 and synchronize
+  the published shrinkwrap.
+- Update transitive body-parser locks to 2.4.0 (Firebase Functions) and
+  1.20.9 (optional Genkit filtering) to fix CVE-2026-111181.
+- Update the development test transformer to ts-jest 29.4.15 and synchronize
+  its declared version in the published shrinkwrap.
+- Require Node.js 22.23.4 or a newer 22.x release to include the October 2026
+  runtime security fixes; keep lockfile engine metadata in sync.
+- Enforce supported Node.js versions for repository installs and resolve the
+  latest Node.js 22 release in CI and npm staging.
+- Document managed runtime patch verification and update policies for consumers.
+
 ## Version 1.0.0-rc.5
 
 - Defer loading Genkit and Vertex AI until content filtering is enabled, and
