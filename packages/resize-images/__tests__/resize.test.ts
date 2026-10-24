@@ -14,11 +14,8 @@
  * limitations under the License.
  */
 
-import * as fs from "fs";
-
 import mockedEnv from "mocked-env";
 import sizeOf from "image-size";
-import sharp from "sharp";
 
 const environment = {
   LOCATION: "us-central1",
@@ -68,21 +65,14 @@ describe("extension", () => {
   });
 
   test("resize image correctly", async () => {
-    const temporaryPath = `${__dirname}/temp-image.png`;
     const size = "75x75";
 
     const modifiedImageBuffer = await resize(TEST_IMAGE, size);
 
-    await sharp(modifiedImageBuffer).toFile(temporaryPath);
-
-    var dimensions = sizeOf(temporaryPath);
+    const dimensions = sizeOf(modifiedImageBuffer);
 
     expect(dimensions.width).toEqual(75);
     expect(dimensions.height).toEqual(75);
-
-    fs.unlink(temporaryPath, (err) => {
-      if (err) throw new Error(err.message);
-    });
   });
 
   test("image types supported", async () => {
