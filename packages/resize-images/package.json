@@ -73,7 +73,7 @@
     "genkit": "^1.42.0",
     "firebase": "^11.3.1",
     "image-size": "^2.0.4",
-    "image-type": "^4.1.0",
+    "image-type": "^6.1.0",
     "jest": "^30.5.2",
     "mocked-env": "^1.3.5",
     "ts-jest": "^29.4.15",
