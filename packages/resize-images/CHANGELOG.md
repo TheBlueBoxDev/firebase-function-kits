@@ -1,5 +1,7 @@
 ## Version 1.0.0-rc.6
 
+- Update transitive body-parser locks to 2.4.0 (Firebase Functions) and
+  1.20.9 (optional Genkit filtering) to fix CVE-2026-111181.
 - Update the development test transformer to ts-jest 29.4.15 and synchronize
   its declared version in the published shrinkwrap.
 - Require Node.js 22.23.4 or a newer 22.x release to include the October 2026
