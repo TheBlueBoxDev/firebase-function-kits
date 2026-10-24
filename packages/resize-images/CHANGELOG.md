@@ -1,5 +1,7 @@
 ## Version 1.0.0-rc.6
 
+- Update the development-only image-size dependency to 2.0.4, synchronize
+  the published shrinkwrap, and measure resized image buffers directly in tests.
 - Update the development-only dotenv dependency to 18.0.8 and synchronize
   the published shrinkwrap.
 - Update transitive body-parser locks to 2.4.0 (Firebase Functions) and
