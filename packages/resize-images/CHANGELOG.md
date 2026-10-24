@@ -1,5 +1,7 @@
 ## Version 1.0.0-rc.6
 
+- Upgrade the development-only image-type dependency to 6.1.0, synchronize
+  the published shrinkwrap, and await ESM image detection in conversion tests.
 - Upgrade development tests to Jest 30 and its matching types, synchronize
   the published shrinkwrap, refresh the snapshot documentation header, and
   update the live content-filter test command to `--testPathPatterns`.
