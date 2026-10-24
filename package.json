@@ -5,7 +5,7 @@
   "description": "TheBlueBoxDev self-managed Firebase Function Kits",
   "license": "Apache-2.0",
   "engines": {
-    "node": "22"
+    "node": "^22.23.4"
   },
   "workspaces": [
     "packages/*"

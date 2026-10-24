@@ -1,3 +1,11 @@
+## Version 1.0.0-rc.6
+
+- Require Node.js 22.23.4 or a newer 22.x release to include the October 2026
+  runtime security fixes; keep lockfile engine metadata in sync.
+- Enforce supported Node.js versions for repository installs and resolve the
+  latest Node.js 22 release in CI and npm staging.
+- Document managed runtime patch verification and update policies for consumers.
+
 ## Version 1.0.0-rc.5
 
 - Defer loading Genkit and Vertex AI until content filtering is enabled, and
