@@ -1,5 +1,7 @@
 ## Version 1.0.0-rc.6
 
+- Update the development test transformer to ts-jest 29.4.15 and synchronize
+  its declared version in the published shrinkwrap.
 - Require Node.js 22.23.4 or a newer 22.x release to include the October 2026
   runtime security fixes; keep lockfile engine metadata in sync.
 - Enforce supported Node.js versions for repository installs and resolve the
