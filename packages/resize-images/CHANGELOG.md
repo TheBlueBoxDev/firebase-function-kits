@@ -1,5 +1,7 @@
 ## Version 1.0.0-rc.6
 
+- Update the development-only dotenv dependency to 18.0.8 and synchronize
+  the published shrinkwrap.
 - Update transitive body-parser locks to 2.4.0 (Firebase Functions) and
   1.20.9 (optional Genkit filtering) to fix CVE-2026-111181.
 - Update the development test transformer to ts-jest 29.4.15 and synchronize
