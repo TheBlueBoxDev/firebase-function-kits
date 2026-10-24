@@ -32,9 +32,14 @@ not grant permission to push, deploy, or change live Firebase resources.
 
 ## Development
 
-Use Node.js 22 and npm.
+Use Node.js 22.23.4 or a newer 22.x release and npm. The repository
+rejects unsupported Node.js versions through `.npmrc` (`engine-strict=true`).
+CI and npm staging resolve the latest Node.js 22 release instead of reusing
+an older cached version.
 
 ```bash
+nvm install
+nvm use
 npm install
 npm run build
 npm test

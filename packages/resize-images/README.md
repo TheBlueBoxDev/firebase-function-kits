@@ -12,7 +12,7 @@ behavior.
 
 ## Runtime behavior
 
-- Cloud Functions 2nd gen on Node.js 22.
+- Cloud Functions 2nd gen on Node.js 22 (minimum patched version: 22.23.4).
 - `cpu: "gcf_gen1"` and `concurrency: 1` preserve first-generation CPU and
   single-request behavior during migration.
 - The Storage trigger is bound to `IMG_BUCKET`.
@@ -29,7 +29,7 @@ Run from the Firebase project root:
 firebase functions:kits:install \
   --template installation \
   --no-configure \
-  --package @thebluebox/resize-images@1.0.0-rc.5 \
+  --package @thebluebox/resize-images@1.0.0-rc.6 \
   --project <firebase-project-id> \
   --account <firebase-account>
 ```
@@ -49,7 +49,7 @@ tested runtime and version by setting these fields in the generated wrapper's
     "node": "22"
   },
   "dependencies": {
-    "@thebluebox/resize-images": "1.0.0-rc.5"
+    "@thebluebox/resize-images": "1.0.0-rc.6"
   }
 }
 ```
@@ -79,6 +79,39 @@ firebase functions:kits:install \
   --project <firebase-project-id> \
   --account <firebase-account>
 ```
+
+## Node.js security updates
+
+Use Node.js 22.23.4 or a newer 22.x release for local development, builds,
+emulators, and the deployed function. This minimum incorporates the
+[October 21, 2026 Node.js security fixes](https://nodejs.org/en/blog/vulnerability/october-2026-security-releases).
+The package declares `engines.node: "^22.23.4"`; npm normally warns on an
+unsupported version. This repository enables `engine-strict=true` to reject
+unsupported versions during installation. Consumers can enable the same npm
+setting in their own repository.
+
+Keep `"node": "22"` in the generated wrapper to select Firebase's managed
+runtime family. That setting and this package's engine requirement do not pin
+or update the Node.js patch version running in Google Cloud. Updating npm
+dependencies also does not update Node.js itself.
+
+Before rollout, inspect the deployed function's runtime update policy:
+
+```bash
+gcloud functions describe <function-name> \
+  --gen2 --region <region> --project <project> \
+  --format="yaml(buildConfig.runtime,buildConfig.automaticUpdatePolicy,buildConfig.onDeployUpdatePolicy)"
+```
+
+With `automaticUpdatePolicy`, Google rolls out runtime security updates after
+validation; the policy alone does not prove this patch has reached a function.
+With `onDeployUpdatePolicy`, redeploy after Google makes the patched runtime
+image available. Verify the effective Node.js version is at least 22.23.4
+(for example, log `process.version` temporarily in the consuming function and
+check its runtime logs). Check the
+[Google runtime security update policy](https://docs.cloud.google.com/functions/docs/securing/execution-environment-security)
+for details. Updating this package alone does not establish that production is
+patched.
 
 ## Parameters
 
@@ -127,6 +160,19 @@ filter-enabled dependency tree must be audited separately; known transitive
 Genkit/OpenTelemetry advisories are not proof of exploitability in this usage.
 
 ### Dependency audit review
+
+The rc.6 lockfiles update transitive `body-parser` to 2.4.0 through Firebase
+Functions/Express and to 1.20.9 through the optional Genkit dependency tree.
+These versions address [CVE-2026-111181](https://github.com/advisories/GHSA-27r3-jxmh-p828),
+a denial of service involving malformed compressed request bodies. Existing
+consumers must install the updated package and redeploy to use the corrected
+dependencies. This dependency fix is separate from the Node.js runtime patches
+[described above](#nodejs-security-updates).
+
+On 2026-10-24, `npm audit --omit=dev` reported zero advisories for both the
+updated repository lockfile and an isolated default consumer installation of
+the rc.6 tarball. The consumer installed `body-parser@2.4.0`. This result does
+not cover the optional Genkit/Vertex AI dependency graph.
 
 As of 2026-10-19, `npm audit --omit=dev` reported no advisories in the default
 production dependency graph. In a local consumer install, the previous
