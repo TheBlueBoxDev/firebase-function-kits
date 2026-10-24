@@ -23,6 +23,11 @@ behavior.
 
 ## Installation
 
+For a project **without** an installed Resize Images extension, follow the
+[fresh installation guide](https://github.com/TheBlueBoxDev/firebase-function-kits/blob/main/docs/installations/resize-images.md).
+It covers prerequisites, configuration from scratch, validation, and deployment.
+The `ext:export` step below applies only when migrating an installed extension.
+
 Run from the Firebase project root:
 
 ```bash
@@ -54,7 +59,7 @@ tested runtime and version by setting these fields in the generated wrapper's
 }
 ```
 
-After installation, copy the active extension configuration into the kit
+When migrating an existing extension, copy its active configuration into the kit
 instance:
 
 ```bash

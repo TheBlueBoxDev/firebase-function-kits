@@ -16,6 +16,11 @@ repository and is not stored in this monorepo.
 
 ## Migration resources
 
+For a Firebase project without the Resize Images extension, use the
+[fresh installation guide](./docs/installations/resize-images.md) and the
+[`firebase-resize-images-installation` skill](./skills/firebase-resize-images-installation).
+This workflow configures the kit directly without first installing an extension.
+
 Migration material follows the same package-specific structure as the
 monorepo. See the [migration conventions](./docs/migrations/) before adding a
 new extension.
