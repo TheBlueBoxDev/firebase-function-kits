@@ -1,5 +1,16 @@
 ## Version 1.0.0-rc.6
 
+- Upgrade the development-only image-type dependency to 6.1.0, synchronize
+  the published shrinkwrap, and await ESM image detection in conversion tests.
+- Upgrade development tests to Jest 30 and its matching types, synchronize
+  the published shrinkwrap, refresh the snapshot documentation header, and
+  update the live content-filter test command to `--testPathPatterns`.
+- Update the development-only image-size dependency to 2.0.4, synchronize
+  the published shrinkwrap, and measure resized image buffers directly in tests.
+- Update the development-only dotenv dependency to 18.0.8 and synchronize
+  the published shrinkwrap.
+- Update transitive body-parser locks to 2.4.0 (Firebase Functions) and
+  1.20.9 (optional Genkit filtering) to fix CVE-2026-111181.
 - Update the development test transformer to ts-jest 29.4.15 and synchronize
   its declared version in the published shrinkwrap.
 - Require Node.js 22.23.4 or a newer 22.x release to include the October 2026
