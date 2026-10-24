@@ -1,5 +1,8 @@
 # Migrating Firebase Resize Images to the self-managed kit
 
+For a project without the extension, follow the
+[fresh installation guide](../installations/resize-images.md) instead.
+
 This guide moves one Firebase project and environment at a time from the
 deprecated `firebase/storage-resize-images` extension to
 `@thebluebox/resize-images`. The package is shared; each consuming repository

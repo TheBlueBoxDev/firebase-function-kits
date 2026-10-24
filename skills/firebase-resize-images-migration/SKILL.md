@@ -5,6 +5,11 @@ description: Migrate a project from the deprecated firebase/storage-resize-image
 
 # Firebase Resize Images migration
 
+If the target has no installed Resize Images extension, use the
+`firebase-resize-images-installation` skill or the repository's
+[fresh installation guide](https://github.com/TheBlueBoxDev/firebase-function-kits/blob/main/docs/installations/resize-images.md)
+instead. Configuration export and extension cutover do not apply in that case.
+
 Apply the repository's
 [migration guide](https://github.com/TheBlueBoxDev/firebase-function-kits/blob/main/docs/migrations/resize-images.md)
 one Firebase project and environment at a time. The rules below are
