@@ -1,5 +1,8 @@
 ## Version 1.0.0-rc.6
 
+- Upgrade development tests to Jest 30 and its matching types, synchronize
+  the published shrinkwrap, refresh the snapshot documentation header, and
+  update the live content-filter test command to `--testPathPatterns`.
 - Update the development-only image-size dependency to 2.0.4, synchronize
   the published shrinkwrap, and measure resized image buffers directly in tests.
 - Update the development-only dotenv dependency to 18.0.8 and synchronize
